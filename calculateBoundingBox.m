@@ -1,17 +1,17 @@
 function [box,xinit,Aeq,beq] = calculateBoundingBox(Aeq,beq,Aineq,bineq,ub,lb)
 
-% Determine if there are inequalities
+% Determine if there are inequalities. If so, add slack variables
 if ~isempty(Aineq) && (size(Aineq,1)==numel(bineq))
     numEqConstraints   = size(Aeq,1);
     numIneqConstraints = size(Aineq,1);
     Aeq = [Aeq,zeros(numEqConstraints,numIneqConstraints);...
             Aineq,eye(numIneqConstraints)];
     beq = [beq;bineq];
-    ub  = [ub(:);1e2*ones(numIneqConstraints,1)];
+    ub  = [ub(:);1e2*ones(numIneqConstraints,1)];   % add bounds on the slacks (if appropriate)
     lb  = [lb(:);zeros(numIneqConstraints,1)];
 end
 
-% Determine bounding box
+% Determine bounding box and initial point for the Hit-And-Run
 options.Display = 'off';
 box  = zeros(size(Aeq,2),2);
 fobj = zeros(size(Aeq,2),1);
